@@ -65,8 +65,8 @@ void Fixes::PostLoad::Install()
 		CacheFormEditorIDs::Install();
 	}
 	if (fixes.firstPersonAlpha) {
-		// broken on some setups
-		//FirstPersonAlpha::Install();
+		// Might be worth to test on more setups to see whether the update fixed it
+		FirstPersonAlpha::Install();
 	}
 	if (fixes.wornRestrictionsForWeapons) {
 		if (GetModuleHandle(L"AmmoEnchanting")) {
