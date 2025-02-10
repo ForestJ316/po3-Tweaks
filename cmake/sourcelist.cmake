@@ -17,6 +17,7 @@ set(sources ${sources}
 	src/Fixes/FirstPersonAlpha.cpp
 	src/Fixes/FlagSpellsAsNoAbsorb.cpp
 	src/Fixes/IsFurnitureAnimTypeForFurniture.cpp
+	src/Fixes/MagicItemFindKeywordFunctorCrash.cpp
 	src/Fixes/MapMarkerPlacement.cpp
 	src/Fixes/ProjectileRange.cpp
 	src/Fixes/ReapplySpellsOnLoad.cpp
@@ -28,6 +29,7 @@ set(sources ${sources}
 	src/Fixes/UnderwaterCamera.cpp
 	src/Fixes/UseFurnitureInCombat.cpp
 	src/Fixes/ValidateScreenshotFolder.cpp
+	src/Fixes/WornRestrictionsForWeapons.cpp
 	src/PCH.cpp
 	src/Papyrus.cpp
 	src/Settings.cpp

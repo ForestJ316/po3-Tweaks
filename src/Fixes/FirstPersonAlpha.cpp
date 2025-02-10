@@ -73,7 +73,7 @@ namespace Fixes::FirstPersonAlpha
 
 	void Install()
 	{
-		REL::Relocation<std::uintptr_t> target{ REL_ID(37777, 38722), 0x55 };
+		REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(37777, 38722), 0x55 };
 		stl::write_thunk_call<FirstPersonAlpha, 6>(target.address());
 
 		if (auto eventSource = SKSE::GetCameraEventSource())

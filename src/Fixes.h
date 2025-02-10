@@ -77,6 +77,11 @@ namespace Fixes
 		void Install();
 	}
 
+	namespace MagicItemFindKeywordFunctorCrash
+	{
+		void Install();
+	}
+
 	namespace MapMarkerPlacement
 	{
 		void Install();
@@ -133,6 +138,11 @@ namespace Fixes
 	}
 
 	namespace ValidateScreenshotFolder
+	{
+		void Install();
+	}
+
+	namespace WornRestrictionsForWeapons
 	{
 		void Install();
 	}
