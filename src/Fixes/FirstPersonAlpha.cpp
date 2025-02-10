@@ -5,19 +5,20 @@ namespace Fixes::FirstPersonAlpha
 {
 	struct FirstPersonAlpha
 	{
-		static inline float currentAlpha = 0.f;
+		static inline float fCurrentAlpha = 1.0f;
+		static inline bool bIsValidTween = false;
 
 		static void UpdateFPRootAlpha(RE::NiAVObject* a_object, float a_alpha)
 		{
 			RE::BSVisit::TraverseScenegraphGeometries(a_object, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
 				using State = RE::BSGeometry::States;
 				using Flag = RE::BSShaderProperty::EShaderPropertyFlag;
-	
+				
 				auto effect = a_geometry->properties[State::kEffect].get();
 				if (effect)
 				{
 					auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect);
-					if (lightingShader && (lightingShader->flags.any(Flag::kSkinned) || lightingShader->flags.any(Flag::kZBufferWrite))) // sceneroot has zbufferwrite flag
+					if (lightingShader && lightingShader->flags.any(Flag::kSkinned, Flag::kSpecular))
 					{
 						auto material = static_cast<RE::BSLightingShaderMaterialBase*>(lightingShader->material);
 						if (material) {
@@ -36,13 +37,10 @@ namespace Fixes::FirstPersonAlpha
 			if (a_alpha >= 2.f) {
 				a_alpha -= 2.f;
 			}
-			if (RE::PlayerCamera::GetSingleton()->IsInFirstPerson()) {
+			if (RE::PlayerCamera::GetSingleton()->IsInFirstPerson() || bIsValidTween) {
 				UpdateFPRootAlpha(a_player->Get3D(true), a_alpha);
 			}
-			currentAlpha = a_alpha;
-			//if (a_alpha == 1.f)
-				//UpdateFPRootAlpha(a_player->Get3D(false), a_alpha);
-			//a_player->Get3D(true)->UpdateMaterialAlpha(a_alpha, false);
+			fCurrentAlpha = a_alpha;
 			return nullptr;  // Return null so that the original fade function for 1st person doesn't execute
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
@@ -57,20 +55,29 @@ namespace Fixes::FirstPersonAlpha
 
 		EventResult ProcessEvent(const SKSE::CameraEvent* a_event, RE::BSTEventSource<SKSE::CameraEvent>*) override
 		{
-			if (a_event && a_event->newState && a_event->oldState) {
-				auto a_player = RE::PlayerCharacter::GetSingleton();
-				if (a_event->newState->id == RE::CameraState::kFirstPerson && a_event->oldState->id != RE::CameraState::kFirstPerson) {
-					FirstPersonAlpha::UpdateFPRootAlpha(a_player->Get3D(false), FirstPersonAlpha::currentAlpha);
+			if (a_event && a_event->newState && a_event->oldState)
+			{
+				if (FirstPersonAlpha::bIsValidTween && a_event->newState->id != RE::CameraState::kTween)
+					FirstPersonAlpha::bIsValidTween = false;
+
+				if (FirstPersonAlpha::fCurrentAlpha < 1.0f)
+				{
+					auto a_player = RE::PlayerCharacter::GetSingleton();
+					if (a_event->newState->id == RE::CameraState::kFirstPerson) {
+						FirstPersonAlpha::UpdateFPRootAlpha(a_player->Get3D(true), FirstPersonAlpha::fCurrentAlpha);
+					}
+					else if (a_event->newState->id == RE::CameraState::kTween && a_event->oldState->id == RE::CameraState::kFirstPerson) {
+						FirstPersonAlpha::bIsValidTween = true;
+					}
+					else if (a_event->newState->id != RE::CameraState::kFirstPerson && a_event->oldState->id == RE::CameraState::kFirstPerson) {
+						FirstPersonAlpha::UpdateFPRootAlpha(a_player->Get3D(true), 1.0);
+					}
 				}
-				else if (a_event->newState->id != RE::CameraState::kFirstPerson && a_event->oldState->id == RE::CameraState::kFirstPerson) {
-					FirstPersonAlpha::UpdateFPRootAlpha(a_player->Get3D(false), 1.0);
-				}
-				logger::info("switched camera to 1st person: {}", a_event->newState->id == RE::CameraState::kFirstPerson);
 			}
 			return EventResult::kContinue;
 		}
 	};
-
+	
 	void Install()
 	{
 		REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(37777, 38722), 0x55 };
